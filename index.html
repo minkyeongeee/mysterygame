@@ -62,6 +62,16 @@ button:focus-visible,select:focus-visible,input:focus-visible{outline:3px solid 
 .hero .kicker{font-family:var(--type);font-size:13px;color:var(--desk-muted)}
 .hero h1{font-size:clamp(30px,5.6vw,50px);color:#F4F1E6}
 .hero .lede{max-width:38em;color:#CFCBBE;font-size:17px}
+.crewbox{border:1px solid #3B423F;background:var(--desk-2);border-radius:6px;padding:16px;display:grid;gap:10px;max-width:520px}
+.crewq{font-family:var(--display);font-weight:700;font-size:20px;color:#F4F1E6}
+.crewsub{font-size:14px;color:var(--desk-muted);font-family:var(--type)}
+.crewbox input{font:inherit;padding:9px 12px;border:1px solid #4A514D;border-radius:6px;background:#121513;color:var(--desk-ink);width:min(280px,100%)}
+.crewerr{color:#F2B8AE;font-size:14px}
+.memo .crewbox{background:var(--paper-2);border-color:var(--rule)}
+.memo .crewq{color:var(--ink);font-size:18px}
+.memo .crewsub{color:var(--muted)}
+.memo .crewbox input{background:#fff;border-color:#9AA0A4;color:var(--ink)}
+.memo .crewerr{color:var(--bad)}
 .team{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
 .team label{font-family:var(--display);font-weight:700}
 .team input{font:inherit;padding:8px 12px;border:1px solid #4A514D;border-radius:6px;background:var(--desk-2);color:var(--desk-ink);width:min(260px,100%)}
@@ -117,6 +127,9 @@ button:focus-visible,select:focus-visible,input:focus-visible{outline:3px solid 
 .person .nm{font-family:var(--display);font-weight:700;font-size:18px}
 .person .rl{font-size:13px;color:var(--accent);font-family:var(--display);font-weight:700}
 .person .more{font-family:var(--type);font-size:11px;color:var(--muted);margin-top:4px}
+.memo .team label{font-family:var(--display);font-weight:700}
+.memo .team input{font:inherit;padding:8px 12px;border:1px solid #9AA0A4;border-radius:6px;background:#fff;color:var(--ink);width:min(260px,100%)}
+.memo .fb{justify-self:start}
 .cta{justify-self:start;background:var(--ink);color:var(--paper);border:0;border-radius:6px;padding:12px 22px;font-family:var(--display);font-weight:700;font-size:16px;margin-top:6px}
 .cta:hover{background:#000}
 .stack{display:grid;gap:22px;min-width:0}
@@ -421,7 +434,7 @@ const ART = {
 const CASES = {
  dmz:{
   no:"2026-접경-01", title:"DMZ 생태 조사단 실종 사건", short:"DMZ 생태 조사단", tag:"위치 찾기", stamp:"긴급",
-  role:"접경지역 상황실 분석관",
+  role:"접경지역 상황실 조사관",
   summary:"조사 도중 연락이 끊긴 생태 조사단. 단서를 바탕으로 조사단이 있는 위치를 찾아라!",
   brief:[
    ["사건 배경",[
@@ -430,7 +443,7 @@ const CASES = {
     "접경지역은 출입이 엄격히 통제되는 곳이라 안내 장교가 함께 다닌다.",
     "그런데 조사를 시작한 지 3일째가 되던 오후,<br>짙은 안개가 끼더니 조사단으로부터의 연락이 끊겼다."]],
    ["당신의 임무",[
-    "당신은 접경지역 상황실의 분석관이다.",
+    "당신은 접경지역 상황실의 조사관이다.",
     "수색대는 출동 준비를 마쳤지만, 통제 구역의 범위가 넓어 무작정 아무 곳이나 수색할 수는 없다.",
     "조사단원들이 남긴 자료를 분석해 조사단이 있는 정확한 지점을 찾고, 수색 요청서를 작성해야 한다."]]
   ],
@@ -663,6 +676,10 @@ function unlockKey(code){
 /* =====================================================================
    규칙
    ===================================================================== */
+/* ===== 구글 시트 기록 전송 =====
+   선생님의 Apps Script 웹 앱 주소를 따옴표 안에 붙여 넣으면, 사건을 해결할 때마다 기록이 구글 시트로 자동 전송된다.
+   예: const SHEET_URL = "https://script.google.com/macros/s/AKfy..../exec";   (비워 두면 전송하지 않음) */
+const SHEET_URL = "";
 const LOCK = 10;   // 오답 시 재조사 시간(초)
 const PEN = 30;    // 힌트 1회당 기록 시간 벌점(초)
 const FINAL_MIN = 15;
@@ -755,7 +772,12 @@ function homeView(){
   <section class="hero">
     <h1>접경지역 사건 파일</h1>
     <p class="lede">${T("증거를 찾아낸 후, 단계마다 질문에 답해 사건을 해결하세요.")}</p>
-    <div class="team"><label for="team">이름 또는 모둠명</label><input id="team" maxlength="20" placeholder="예: 3모둠" value="${esc(S.team)}"></div>
+    <div class="crewbox">
+      <label class="crewq" for="team">당신의 이름은 무엇입니까?</label>
+      <p class="crewsub">조사관 등록: 사건 파일을 열기 전에 이름을 적어 주세요.</p>
+      <input id="team" maxlength="12" autocomplete="off" placeholder="이름" value="${esc(S.team)}">
+      <p class="crewerr" id="nameMsgHome" hidden>사건 파일을 열려면 이름을 먼저 적어 주세요.</p>
+    </div>
   </section>
   <div class="covers">${covers}</div>
   <div class="howto">
@@ -815,6 +837,7 @@ function briefView(id){
       ${sections}
       <h3>${id==="map"?"용의자":"등장인물"}</h3>
       <div class="cast">${cast}</div>
+      ${!cs.start&&!S.team?`<div class="crewbox"><label class="crewq" for="team">당신의 이름은 무엇입니까?</label><p class="crewsub">조사관 등록: 수사를 시작하기 전에 이름을 적어 주세요.</p><input id="team" maxlength="12" autocomplete="off" placeholder="이름" value="${esc(S.team)}"><p class="crewerr" id="nameMsg" hidden>수사를 시작하려면 이름을 먼저 적어 주세요.</p></div>`:""}
       <button class="cta" data-begin="${id}">${cs.reached>0?"수사 계속하기":"수사 시작"} →</button>
     </article>
     <div class="stack">${c.side.map(evView).join("")}</div>
@@ -878,7 +901,7 @@ function stageView(id,si){
     </section>
     <aside class="board" aria-label="수사 보고서">
       <div class="report">
-        <div class="rh"><h3>수사 보고서</h3><span>${st.name} · 작성: ${S.team?esc(S.team):"분석관"}</span></div>
+        <div class="rh"><h3>수사 보고서</h3><span>${st.name} · 작성: ${S.team?esc(S.team):"조사관"}</span></div>
         <p class="gate" data-gate hidden></p>
         ${st.qs.map((q,i)=>qView(id,q,`${si+1}-${i+1}`)).join("")}
         ${allDone?`<button class="next" data-next="${id}">${last?"사건의 진실 확인하기":"다음 증거 서류 열기"} →</button>`:""}
@@ -891,9 +914,10 @@ function endView(id){
   const c=CASES[id], cs=S.cases[id], q=c.finalQ, done=!!cs.solved[q.id];
   const result = done ? `<div class="board"><div class="report result">
       <div class="rh"><h3>사건 해결 보고서</h3><span>${c.no}</span></div>
-      <p><b>${S.team?esc(S.team):"분석관"}</b> · ${c.short}</p>
+      <p><b>${S.team?esc(S.team):"조사관"}</b> · ${c.short}</p>
       <div class="stats"><div><b>${fmt(elapsed(cs))}</b><span>기록 시간</span></div><div><b>${cs.wrong}</b><span>오답</span></div><div><b>${cs.hints}</b><span>힌트</span></div></div>
       <p class="small">${T(`기록 시간에는 힌트 벌점(1번에 ${PEN}초)이 포함되어 있어요.`)}</p>
+      <div id="sendState">${sendStateHTML(id)}</div>
       <button class="btn ghost" data-home>다른 사건 파일 열기</button>
     </div></div>` : "";
   return `<div class="ending">
@@ -961,6 +985,28 @@ addEventListener("keydown",e=>{ if(e.key==="Escape") closePerson(); });
 /* =====================================================================
    동작
    ===================================================================== */
+function mmss(sec){ return `${Math.floor(sec/60)}분 ${String(sec%60).padStart(2,"0")}초`; }
+function sendRecord(id){
+  const cs=S.cases[id], c=CASES[id];
+  if(!SHEET_URL || !cs.end || cs.sent || cs.sending) { drawSendState(id); return; }
+  cs.sending=true; cs.sendFail=false; drawSendState(id);
+  const real=Math.round((cs.end-cs.start)/1000), pen=cs.hints*PEN;
+  const rec={ case:c.title, team:S.team||"(이름 없음)", total:mmss(real+pen), real:mmss(real), hints:cs.hints, penalty:pen, wrong:cs.wrong };
+  try{
+    fetch(SHEET_URL,{method:"POST",mode:"no-cors",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify(rec)})
+      .then(()=>{ cs.sending=false; cs.sent=true; save(); drawSendState(id); })
+      .catch(()=>{ cs.sending=false; cs.sendFail=true; drawSendState(id); });
+  }catch(e){ cs.sending=false; cs.sendFail=true; drawSendState(id); }
+}
+function sendStateHTML(id){
+  if(!SHEET_URL) return "";
+  const cs=S.cases[id];
+  if(cs.sent) return `<p class="small">선생님께 기록을 보냈어요.</p>`;
+  if(cs.sending) return `<p class="small">선생님께 기록을 보내는 중이에요…</p>`;
+  if(cs.sendFail) return `<p class="small">기록을 보내지 못했어요. 인터넷 연결을 확인한 뒤 다시 보내 주세요. <button class="btn ghost" data-resend="${id}">다시 보내기</button></p>`;
+  return "";
+}
+function drawSendState(id){ const el=document.getElementById("sendState"); if(el) el.innerHTML=sendStateHTML(id); }
 function check(id,qid){
   const cs=S.cases[id], q=findQ(id,qid);
   let ok=false, hit=0, total=0;
@@ -972,7 +1018,7 @@ function check(id,qid){
   }
   if(ok){
     cs.solved[qid]=true; delete msg[qid];
-    if(q===CASES[id].finalQ) cs.end=Date.now();
+    if(q===CASES[id].finalQ){ cs.end=Date.now(); cs.sent=false; setTimeout(()=>sendRecord(id),0); }
   } else {
     cs.wrong++; cs.fails[qid]=(cs.fails[qid]||0)+1; cs.lockUntil[qid]=Date.now()+LOCK*1000;
     const n=cs.fails[qid];
@@ -984,7 +1030,7 @@ function check(id,qid){
   save(); render();
 }
 
-app.addEventListener("input",e=>{ if(e.target.id==="team"){ S.team=e.target.value.trim(); save(); } });
+app.addEventListener("input",e=>{ if(e.target.id==="team"){ S.team=e.target.value.trim(); save(); ["nameMsg","nameMsgHome"].forEach(k=>{const m=document.getElementById(k); if(m&&S.team) m.hidden=true;}); } });
 app.addEventListener("change",e=>{
   const s=e.target.closest("select[data-match]"); if(!s) return;
   const qid=s.dataset.match; sel[qid]=sel[qid]||{}; sel[qid][s.dataset.r]=s.value;
@@ -1003,7 +1049,7 @@ app.addEventListener("click",e=>{
   const id=current(), d=t.dataset;
   if(d.keyOpen!==undefined){ keyState={open:true,err:false,data:null}; render(); const k=document.getElementById("keycode"); if(k) k.focus(); return; }
   if(d.keyClose!==undefined){ keyState={open:false,err:false,data:null}; render(); return; }
-  if(d.go!==undefined){ location.hash=d.go; return; }
+  if(d.go!==undefined){ if(!S.team){ const m=document.getElementById("nameMsgHome"); if(m) m.hidden=false; const t=document.getElementById("team"); if(t){ t.focus(); t.scrollIntoView({block:"center"}); } return; } location.hash=d.go; return; }
   if(d.home!==undefined){ history.pushState(null,"",location.pathname+location.search); confirmReset=null; render(); scrollTo(0,0); return; }
   if(d.person!==undefined && id){ openPerson(id,+d.person); return; }
   if(d.reset){ confirmReset=d.reset; render(); return; }
@@ -1011,7 +1057,9 @@ app.addEventListener("click",e=>{
   if(d.resetYes){ S.cases[d.resetYes]=blankCase(); confirmReset=null; sel={}; msg={}; save(); render(); return; }
   const cs=id&&S.cases[id]; if(!cs) return;
   if(d.step!==undefined){ cs.view=+d.step; save(); render(); scrollTo(0,0); return; }
-  if(d.begin){ if(!cs.start) cs.start=Date.now(); if(cs.reached<1) cs.reached=1; cs.view=Math.max(1,cs.view||1); save(); render(); scrollTo(0,0); return; }
+  if(d.resend){ S.cases[d.resend].sendFail=false; sendRecord(d.resend); return; }
+  if(d.begin){ if(!cs.start && !S.team){ const m=document.getElementById("nameMsg"); if(m) m.hidden=false; const t=document.getElementById("team"); if(t) t.focus(); return; }
+    if(!cs.start) cs.start=Date.now(); if(cs.reached<1) cs.reached=1; cs.view=Math.max(1,cs.view||1); save(); render(); scrollTo(0,0); return; }
   if(d.q){
     const q=findQ(id,d.q), i=+d.i; let cur=sel[d.q]||[];
     cur = q.type==="multi" ? (cur.includes(i)?cur.filter(x=>x!==i):[...cur,i]) : [i];
